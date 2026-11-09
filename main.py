@@ -10,8 +10,11 @@ def save_tasks(tasks):
 try:
     with open(DATA_FILE, "r", encoding="utf-8") as file:
         tasks = json.load(file)
-except (FileNotFoundError, json.JSONDecodeError):
+except FileNotFoundError:
     tasks = []
+except json.JSONDecodeError:
+    print("Ошибка: Файл tasks.json поврежден. Создан новый пустой список задач.")
+    raise SystemExit(1)
 while True:
     print('========== TASK MANAGER ==========')
     print('1. Добавить задачу')
@@ -75,8 +78,6 @@ while True:
                 save_tasks(tasks)
                 print("Задача удалена.")
     elif choice == 5:
-        with open(DATA_FILE, "w", encoding="utf-8") as file:
-            json.dump(tasks, file, ensure_ascii=False, indent=4)
         print("Задачи сохранены, выход из программы.")
         break
     else:
