@@ -3,6 +3,12 @@ from tkinter import ttk
 import json
 from pathlib import Path
 
+BG_COLOR = "#171B26"
+PANEL_COLOR = "#222838"
+INPUT_COLOR = "#262D3E"
+TEXT_COLOR = "#F4F5FA"
+ACCENT_COLOR = "#566CF1"
+
 DATA_FILE = Path(__file__).parent / "tasks.json"
 
 def load_tasks():
@@ -46,36 +52,74 @@ def complete_task():
     if task.endswith('(выполнено)'):
         return
     tasks_listbox.delete(index)
-    tasks_listbox.insert(index, task + '(выполнено)')
+    tasks_listbox.insert(index, task + " (выполнено)")
+    tasks_listbox.itemconfig(index, fg="#63D7AD")
     save_tasks()
 
+def clear_selection(event):
+    listbox = event.widget
+
+    if not listbox.curselection():
+        return
+    index = listbox.nearest(event.y)
+    bbox = listbox.bbox(index)
+    if bbox is None or not (bbox[1] <= event.y < bbox[1] + bbox[3]):
+        listbox.selection_clear(0, tk.END)
 
 root = tk.Tk()
 
 root.title("Task Manager")
-root.geometry("500x550")
-root.minsize(400, 450)
+root.geometry("520x560")
+root.minsize(450, 480)
+root.configure(bg=BG_COLOR)
 
-title = ttk.Label(
+title = tk.Label(
     root,
     text="Мои задачи",
-    font=("Arial", 18, "bold")
+    font=("Arial", 20, "bold"),
+    bg=BG_COLOR,
+    fg=TEXT_COLOR
 )
-title.pack(pady=15)
+title.pack(pady=20, fill='x', ipady=0)
 
-task_entry = ttk.Entry(root, font=("Arial", 12))
-task_entry.pack(padx=20, fill="x")
-
-add_button = ttk.Button(
+task_entry = tk.Entry(
     root,
-    text="Добавить задачу",
-    command=add_task
+    font=("Arial", 12),
+    bg=INPUT_COLOR,
+    fg=TEXT_COLOR,
+    insertbackground=TEXT_COLOR,
+    relief='flat'
 )
-add_button.pack(pady=10)
+task_entry.pack(padx=20, fill="x", ipady=9)
+
+add_button = tk.Button(
+    root,
+    text="+ Добавить задачу",
+    command=add_task,
+    bg=ACCENT_COLOR,
+    fg="#FFFFFF",
+    activebackground="#4357CC",
+    activeforeground="#FFFFFF",
+    font=("Arial", 11, "bold"),
+    relief="flat",
+    cursor="hand2",
+    pady=8
+)
+add_button.pack(padx=20, pady=10, fill="x")
 
 task_entry.bind('<Return>', lambda event: add_task())
 
-tasks_listbox = tk.Listbox(root, font=("Arial", 12))
+tasks_listbox = tk.Listbox(
+    root,
+    font=("Arial", 12),
+    bg=PANEL_COLOR,
+    fg=TEXT_COLOR,
+    selectbackground=ACCENT_COLOR,
+    selectforeground='#FFFFFF',
+    relief='flat',
+    borderwidth=0,
+    highlightthickness=0
+)
 tasks_listbox.pack(
     padx=20,
     pady=10,
@@ -83,20 +127,39 @@ tasks_listbox.pack(
     expand=True
 )
 
-delete_button = ttk.Button(
-    root,
-    text='Удалить задачу',
-    command=delete_task
-)
-delete_button.pack(pady=5)
+tasks_listbox.bind("<ButtonRelease-1>", clear_selection)
 
-complete_button = ttk.Button(
-    root,
-    text='Выполнить задачу',
-    command=complete_task
+buttons_frame = tk.Frame(root, bg=BG_COLOR)
+buttons_frame.pack(padx=20, pady=15, fill="x")
+
+complete_button = tk.Button(
+    buttons_frame,
+    text="✓ Выполнено",
+    command=complete_task,
+    bg="#256D56",
+    fg="#FFFFFF",
+    font=("Arial", 11),
+    relief="flat",
+    cursor="hand2",
+    pady=8
 )
-complete_button.pack(pady=5)
+complete_button.pack(side="left", expand=True, fill="x", padx=(0, 5))
+
+delete_button = tk.Button(
+    buttons_frame,
+    text="Удалить",
+    command=delete_task,
+    bg="#983D48",
+    fg="#FFFFFF",
+    font=("Arial", 11),
+    relief="flat",
+    cursor="hand2",
+    pady=8
+)
+delete_button.pack(side="left", expand=True, fill="x", padx=(5, 0))
 
 for task in load_tasks():
     tasks_listbox.insert(tk.END, task)
+    if task.endswith('(выполнено)'):
+        tasks_listbox.itemconfig(tk.END, fg='#63D7AD')
 root.mainloop()
